@@ -2,8 +2,6 @@ package com.cryptoanalyzer.aharahimova.services;
 
 import com.cryptoanalyzer.aharahimova.entity.Result;
 import com.cryptoanalyzer.aharahimova.exception.ApplicationException;
-import com.cryptoanalyzer.aharahimova.repository.ResultCode;
-
 import static com.cryptoanalyzer.aharahimova.repository.ResultCode.ERROR;
 import static com.cryptoanalyzer.aharahimova.repository.ResultCode.OK;
 

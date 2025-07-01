@@ -3,9 +3,7 @@ package com.cryptoanalyzer.aharahimova.app;
 import com.cryptoanalyzer.aharahimova.controller.MainController;
 import com.cryptoanalyzer.aharahimova.entity.Result;
 import com.cryptoanalyzer.aharahimova.repository.FunctionCode;
-import com.cryptoanalyzer.aharahimova.repository.ResultCode;
 import com.cryptoanalyzer.aharahimova.services.Function;
-import com.cryptoanalyzer.aharahimova.services.UnsupportedFunction;
 
 import static com.cryptoanalyzer.aharahimova.constants.FunctionCodeConstants.*;
 
