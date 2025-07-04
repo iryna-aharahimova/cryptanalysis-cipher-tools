@@ -6,11 +6,18 @@ import com.cryptoanalyzer.aharahimova.exception.ApplicationException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.cryptoanalyzer.aharahimova.constants.CryptoAlphabet.ALPHABET;
+import static com.cryptoanalyzer.aharahimova.constants.FileSuffixesConstants.BRUTE_FORCE;
+import static com.cryptoanalyzer.aharahimova.constants.LogMessagesConstants.*;
 import static com.cryptoanalyzer.aharahimova.repository.ResultCode.ERROR;
 import static com.cryptoanalyzer.aharahimova.repository.ResultCode.OK;
+import static com.cryptoanalyzer.aharahimova.utils.PathUtils.getOutputPath;
 
 public class BruteForce implements Function {
 
@@ -22,62 +29,51 @@ public class BruteForce implements Function {
             "your", "good", "some", "could", "them", "see", "other", "than"
     );
 
+    private static final Logger logger = LoggerFactory.getLogger(BruteForce.class);
+
     @Override
     public Result execute(String[] parameters) {
         try {
+            logger.info(OPERATION_STARTED, "brute force", parameters[1]);
             String inputFilePath = parameters[1];
             Path inputPath = Path.of(inputFilePath);
             String encryptedContent = Files.readString(inputPath);
 
             for (int key = 1; key < ALPHABET.length(); key++) {
-                StringBuilder decoded = getStringBuilder(encryptedContent, key);
+                String decoded = decodeWithKey(encryptedContent, key).toLowerCase();
+                Set<String> found = findCommonWords(decoded);
 
-                String resultText = decoded.toString().toLowerCase();
-                if (containsCommonWords(resultText)) {
-                    System.out.println("Brute force succeeded with key: " + key);
-                    Path outputPath = getOutputPath(inputPath, "[BRUTE_FORCE]");
-                    Files.writeString(outputPath, decoded.toString());
+                if (!found.isEmpty()) {
+                    logger.info(BRUTE_FORCE_FOUND_WORDS, found);
+                    logger.info(BRUTE_FORCE_SUCCEEDED_KEY, key);
+                    logger.info(SAVING_RESULT_TO_FILE, "brute force", getOutputPath(inputPath, BRUTE_FORCE));
+                    Files.writeString(getOutputPath(inputPath, BRUTE_FORCE), decoded);
                     return new Result(OK);
                 }
             }
-
-            return new Result(ERROR, new ApplicationException("Brute-force failed: no suitable key found"));
+            logger.info("No common words found.");
+            return new Result(ERROR, new ApplicationException("No common words found."));
 
         } catch (Exception e) {
-            return new Result(ERROR, new ApplicationException("Brute-force operation failed", e));
+            logger.error(OPERATION_FAILED, e);
+            return new Result(ERROR, new ApplicationException(OPERATION_FAILED, e));
         }
     }
 
-    private static StringBuilder getStringBuilder(String encryptedContent, int key) {
+    private String decodeWithKey(String text, int key) {
         StringBuilder decoded = new StringBuilder();
-        for (char ch : encryptedContent.toCharArray()) {
-            int index = ALPHABET.indexOf(ch);
-            if (index != -1) {
-                int newIndex = (index - key + ALPHABET.length()) % ALPHABET.length();
-                decoded.append(ALPHABET.charAt(newIndex));
-            } else {
-                decoded.append(ch);
-            }
+        for (char ch : text.toCharArray()) {
+            int idx = ALPHABET.indexOf(ch);
+            decoded.append(idx == -1 ? ch : ALPHABET.charAt((idx - key + ALPHABET.length()) % ALPHABET.length()));
         }
-        return decoded;
+        return decoded.toString();
     }
 
-    private boolean containsCommonWords(String text) {
-        String[] words = text.split("[\\s.,!?:\"'«»]+");
-        for (String word : words) {
-            if (COMMON_WORDS.contains(word)) {
-                return true;
-            }
+    private Set<String> findCommonWords(String text) {
+        Set<String> found = new HashSet<>();
+        for (String w : text.split("[\\s.,!?:\"'«»]+")) {
+            if (COMMON_WORDS.contains(w)) found.add(w);
         }
-        return false;
-    }
-
-    private Path getOutputPath(Path inputPath, String suffix) {
-        String fileName = inputPath.getFileName().toString();
-        int dotIndex = fileName.lastIndexOf('.');
-        String baseName = (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
-        String extension = (dotIndex == -1) ? "" : fileName.substring(dotIndex);
-        String outputFileName = baseName + suffix + extension;
-        return inputPath.getParent().resolve(outputFileName);
+        return found;
     }
 }
