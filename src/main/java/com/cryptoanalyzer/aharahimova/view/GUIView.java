@@ -1,18 +1,18 @@
 package com.cryptoanalyzer.aharahimova.view;
 
-import com.cryptoanalyzer.aharahimova.app.Application;
-import com.cryptoanalyzer.aharahimova.controller.MainController;
 import com.cryptoanalyzer.aharahimova.entity.Result;
 
 import javax.swing.*;
-
 import java.awt.*;
+import java.util.concurrent.CountDownLatch;
 
 import static com.cryptoanalyzer.aharahimova.constants.ApplicationCompletionConstants.EXCEPTION;
 import static com.cryptoanalyzer.aharahimova.constants.ApplicationCompletionConstants.SUCCESS;
 
 public class GUIView implements View {
+    private boolean switchToConsole = false;
     private String[] parameters;
+    private final CountDownLatch latch = new CountDownLatch(1);
 
     private final String basePath = "C:\\Users\\irynaa\\IdeaProjects\\cryptoanalysis-cipher-tools\\";
 
@@ -34,17 +34,14 @@ public class GUIView implements View {
         JComboBox<String> modeComboBox = new JComboBox<>(modes);
 
         JTextField sourceField = new JTextField(basePath + "input.txt");
-
         JTextField keyField = new JTextField("3");
 
         modeComboBox.addActionListener(e -> {
             int selectedIndex = modeComboBox.getSelectedIndex();
-            if (selectedIndex == 2) { // Brute Force
-                keyField.setVisible(false);
+            if (selectedIndex == 2) {
                 keyField.setVisible(false);
                 sourceField.setText(basePath + "input_[ENCRYPTED].txt");
             } else {
-                keyField.setVisible(true);
                 keyField.setVisible(true);
                 sourceField.setText(selectedIndex == 0 ? basePath + "input.txt" : basePath + "input_[ENCRYPTED].txt");
             }
@@ -54,7 +51,6 @@ public class GUIView implements View {
 
         JButton consoleButton = new JButton("Switch to Console");
         JButton runButton = new JButton("Run");
-
 
         panel.add(new JLabel("Mode:"));
         panel.add(modeComboBox);
@@ -80,25 +76,27 @@ public class GUIView implements View {
                 parameters = new String[]{mode, source, key};
             }
 
-            MainController controller = new MainController(this);
-            Application app = new Application(controller);
-            Result result = app.run();
-            app.printResult(result);
+            latch.countDown();
+            frame.dispose();
         });
 
         consoleButton.addActionListener(e -> {
+            switchToConsole = true;
+            latch.countDown();
             frame.dispose();
-            View consoleView = new ConsoleView();
-            MainController controller = new MainController(consoleView);
-            Application app = new Application(controller);
-            Result result = app.run();
-            app.printResult(result);
         });
+    }
+
+    public void waitForUserInput() {
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
     public String[] getParameters() {
-        boolean switchToConsole = false;
         return switchToConsole ? null : parameters;
     }
 
