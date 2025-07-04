@@ -1,11 +1,14 @@
 package com.cryptoanalyzer.aharahimova.services;
 
 import com.cryptoanalyzer.aharahimova.entity.Result;
+import com.cryptoanalyzer.aharahimova.exception.ApplicationException;
 
-public class UnsupportedFunction implements Function{
+import static com.cryptoanalyzer.aharahimova.repository.ResultCode.ERROR;
+
+public class UnsupportedFunction implements Function {
     @Override
     public Result execute(String[] parameters) {
-        //todo unsupported
-        return null;
+        return new Result(ERROR, new ApplicationException("Unsupported command: "
+                + String.join(" ", parameters)));
     }
 }

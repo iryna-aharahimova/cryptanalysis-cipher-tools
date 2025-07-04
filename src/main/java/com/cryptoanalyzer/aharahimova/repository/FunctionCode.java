@@ -1,13 +1,11 @@
 package com.cryptoanalyzer.aharahimova.repository;
 
-import com.cryptoanalyzer.aharahimova.services.Decode;
-import com.cryptoanalyzer.aharahimova.services.Encode;
-import com.cryptoanalyzer.aharahimova.services.Function;
-import com.cryptoanalyzer.aharahimova.services.UnsupportedFunction;
+import com.cryptoanalyzer.aharahimova.services.*;
 
 public enum FunctionCode {
     ENCODE(new Encode()),
     DECODE(new Decode()),
+    BRUTE_FORCE(new BruteForce()),
     UNSUPPORTED_FUNCTION(new UnsupportedFunction());
 
     private Function function;
