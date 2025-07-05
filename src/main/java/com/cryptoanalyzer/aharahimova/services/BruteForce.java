@@ -28,7 +28,9 @@ public class BruteForce implements Function {
             "this", "but", "his", "from", "they", "say", "her", "she",
             "will", "would", "there", "their", "about", "which", "when",
             "make", "can", "like", "time", "just", "know", "take", "into",
-            "your", "good", "some", "could", "them", "see", "other", "than"
+            "your", "good", "some", "could", "them", "see", "other", "than",
+            "too", "do", "at", "same", "otherwise", "so", "any", "why", "get",
+            "set", "off", "last", "first", "on", "a", "an", "under", "it"
     );
 
     private static final Logger logger = LoggerFactory.getLogger(BruteForce.class);
@@ -53,8 +55,8 @@ public class BruteForce implements Function {
                     return new Result(OK);
                 }
             }
-            logger.info("No common words found.");
-            return new Result(ERROR, new ApplicationException("No common words found."));
+            logger.warn(BRUTE_FORCE_NO_COMMON_WORDS);
+            return new Result(OK, new ApplicationException(BRUTE_FORCE_NO_COMMON_WORDS));
 
         } catch (Exception e) {
             logger.error(OPERATION_FAILED, e);

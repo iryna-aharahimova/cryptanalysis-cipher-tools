@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 import static com.cryptoanalyzer.aharahimova.constants.CryptoAlphabet.ALPHABET;
+import static com.cryptoanalyzer.aharahimova.constants.LogMessagesConstants.BRUTE_FORCE_NO_COMMON_WORDS;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BruteForceTest {
@@ -54,8 +55,8 @@ class BruteForceTest {
 
         Result result = bruteForce.execute(new String[]{"brute", tempFile.toString()});
 
-        assertEquals(ResultCode.ERROR, result.getResultCode(), "Should return error when no common words found");
-        assertTrue(result.getApplicationException().getMessage().contains("No common words"));
+        assertEquals(ResultCode.OK, result.getResultCode(), "Should return error when no common words found");
+        assertTrue(result.getApplicationException().getMessage().contains(BRUTE_FORCE_NO_COMMON_WORDS));
     }
 
     @Test
