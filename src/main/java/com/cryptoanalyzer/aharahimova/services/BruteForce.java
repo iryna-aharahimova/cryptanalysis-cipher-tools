@@ -22,6 +22,7 @@ import static com.cryptoanalyzer.aharahimova.repository.ResultCode.OK;
 import static com.cryptoanalyzer.aharahimova.utils.PathUtils.getOutputPath;
 
 public class BruteForce implements Function {
+    private static final Logger logger = LoggerFactory.getLogger(BruteForce.class);
 
     private static final List<String> COMMON_WORDS = Arrays.asList(
             "the", "and", "that", "have", "for", "not", "with", "you",
@@ -33,8 +34,6 @@ public class BruteForce implements Function {
             "set", "off", "last", "first", "on", "a", "an", "under", "it"
     );
 
-    private static final Logger logger = LoggerFactory.getLogger(BruteForce.class);
-
     @Override
     public Result execute(String[] parameters) {
         try {
@@ -44,7 +43,7 @@ public class BruteForce implements Function {
             String encryptedContent = Files.readString(inputPath);
 
             for (int key = 1; key < ALPHABET.length(); key++) {
-                String decoded = CryptoUtils.shiftText(encryptedContent, -key, ALPHABET).toLowerCase();
+                String decoded = CryptoUtils.shiftText(encryptedContent, -key, ALPHABET);
                 Set<String> found = findCommonWords(decoded);
 
                 if (!found.isEmpty()) {

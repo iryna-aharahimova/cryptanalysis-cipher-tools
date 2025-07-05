@@ -6,6 +6,7 @@ public class LogMessagesConstants {
     public static final String OPERATION_STARTED = "Starting {} with file: {}";
     public static final String OPERATION_FAILED = "Operation failed";
     public static final String SAVING_RESULT_TO_FILE  = "Saving {} results to a file: {}";
+    public static final String KEY_IS_ZERO  = "Key is 0, operation will not modify the text";
     public static final String USING_KEY  = "{}: using key {}";
     public static final String BRUTE_FORCE_FOUND_WORDS  = "Found common words: {}";
     public static final String BRUTE_FORCE_NO_COMMON_WORDS = "No common words found";

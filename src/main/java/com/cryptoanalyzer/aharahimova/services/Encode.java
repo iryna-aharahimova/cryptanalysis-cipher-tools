@@ -26,7 +26,14 @@ public class Encode implements Function {
             logger.info(OPERATION_STARTED, "encode", parameters[1]);
             Path inputPath = Path.of(parameters[1]);
 
-            int key = Integer.parseInt(parameters[2]) % ALPHABET.length();
+            int parsedKey = Integer.parseInt(parameters[2]);
+            int key = parsedKey % ALPHABET.length();
+
+            if (!CryptoUtils.validateKey(key)) {
+                logger.error(KEY_IS_ZERO);
+                return new Result(ResultCode.ERROR, new ApplicationException(KEY_IS_ZERO));
+            }
+
             logger.info(USING_KEY, "encode", key);
 
             String original = Files.readString(inputPath, StandardCharsets.UTF_8);

@@ -2,6 +2,7 @@ package com.cryptoanalyzer.aharahimova.services;
 
 import com.cryptoanalyzer.aharahimova.entity.Result;
 import com.cryptoanalyzer.aharahimova.exception.ApplicationException;
+import com.cryptoanalyzer.aharahimova.repository.ResultCode;
 import com.cryptoanalyzer.aharahimova.utils.CryptoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,14 @@ public class Decode implements Function {
             logger.info(OPERATION_STARTED, "decode", parameters[1]);
             String inputFilePath = parameters[1];
 
-            int key = Integer.parseInt(parameters[2]) % ALPHABET.length();
+            int parsedKey = Integer.parseInt(parameters[2]);
+            int key = parsedKey % ALPHABET.length();
+
+            if (!CryptoUtils.validateKey(key)) {
+                logger.error(KEY_IS_ZERO);
+                return new Result(ResultCode.ERROR, new ApplicationException(KEY_IS_ZERO));
+            }
+
             logger.info(USING_KEY, "decode", key);
 
             Path inputPath = Path.of(inputFilePath);

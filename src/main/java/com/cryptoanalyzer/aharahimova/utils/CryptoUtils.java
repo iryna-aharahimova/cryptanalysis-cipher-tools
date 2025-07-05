@@ -15,4 +15,8 @@ public class CryptoUtils {
         }
         return sb.toString();
     }
+
+    public static boolean validateKey(int key) {
+        return key != 0;
+    }
 }
