@@ -2,8 +2,12 @@ package com.cryptoanalyzer.aharahimova.services;
 
 import com.cryptoanalyzer.aharahimova.entity.Result;
 import com.cryptoanalyzer.aharahimova.repository.ResultCode;
+import com.cryptoanalyzer.aharahimova.utils.CryptoUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -12,58 +16,54 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DecodeTest {
+    private Decode decode;
+    private Path tempFile;
+    private Path outputPath;
 
-    private final Decode decode = new Decode();
+    @BeforeEach
+    void setUp() throws IOException {
+        decode = new Decode();
+        tempFile = Files.createTempFile("decode-test-", ".txt");
+    }
 
-    private String encodeText(String text, int key) {
-        StringBuilder sb = new StringBuilder();
-        for (char ch : text.toCharArray()) {
-            int index = ALPHABET.indexOf(ch);
-            if (index == -1) {
-                sb.append(ch);
-            } else {
-                int newIndex = (index + key) % ALPHABET.length();
-                sb.append(ALPHABET.charAt(newIndex));
-            }
+    @AfterEach
+    void tearDown() throws IOException {
+        Files.deleteIfExists(tempFile);
+
+        if (outputPath != null) {
+            Files.deleteIfExists(outputPath);
         }
-        return sb.toString();
     }
 
     @Test
     void testSuccessfulDecoding() throws Exception {
-        String originalText = "Hello World";
+        String original = "Hello World";
         int key = 5;
-        String encrypted = encodeText(originalText, key);
 
-        Path tempInput = Files.createTempFile("decode-test-", ".txt");
-        Files.writeString(tempInput, encrypted);
+        String encoded = CryptoUtils.shiftText(original, key, ALPHABET);
 
-        Result result = decode.execute(new String[]{"decode", tempInput.toString(), String.valueOf(key)});
+        Files.writeString(tempFile, encoded);
+
+        Result result = decode.execute(new String[]{"decode", tempFile.toString(), String.valueOf(key)});
 
         assertEquals(ResultCode.OK, result.getResultCode());
 
-        Path outputPath = com.cryptoanalyzer.aharahimova.utils.PathUtils.getOutputPath(tempInput, "_[DECRYPTED]");
+        outputPath = com.cryptoanalyzer.aharahimova.utils.PathUtils.getOutputPath(tempFile, "_[DECRYPTED]");
         assertTrue(Files.exists(outputPath));
 
         String decodedText = Files.readString(outputPath);
-        assertEquals(originalText, decodedText);
-
-        Files.deleteIfExists(tempInput);
-        Files.deleteIfExists(outputPath);
+        assertEquals(original, decodedText);
     }
 
     @Test
     void testDecodeWithInvalidKeyReturnsError() throws Exception {
         String originalText = "Hello World";
 
-        Path tempInput = Files.createTempFile("decode-test-", ".txt");
-        Files.writeString(tempInput, originalText);
+        Files.writeString(tempFile, originalText);
 
-        Result result = decode.execute(new String[]{"decode", tempInput.toString(), "invalidKey"});
+        Result result = decode.execute(new String[]{"decode", tempFile.toString(), "invalidKey"});
 
         assertEquals(ResultCode.ERROR, result.getResultCode());
-
-        Files.deleteIfExists(tempInput);
     }
 
     @Test
