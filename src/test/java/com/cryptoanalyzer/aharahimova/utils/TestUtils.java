@@ -8,6 +8,6 @@ public class TestUtils {
     private static final int MAX_KEY = 70;
 
     public static int getRandomKey() {
-        return random.nextInt(MIN_KEY, MAX_KEY); // 1 до 70 включительно
+        return random.nextInt(MIN_KEY, MAX_KEY);
     }
 }
