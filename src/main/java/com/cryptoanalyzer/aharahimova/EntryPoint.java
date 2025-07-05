@@ -10,19 +10,19 @@ public class EntryPoint {
     public static void main(String[] args) {
         GUIView guiView = new GUIView();
 
-        guiView.waitForUserInput();
-
-        if (guiView.getParameters() == null) {
-            ConsoleView consoleView = new ConsoleView();
-            MainController controller = new MainController(consoleView);
-            Application app = new Application(controller);
-            Result result = app.run();
-            app.printResult(result);
-        } else {
-            MainController controller = new MainController(guiView);
-            Application app = new Application(controller);
-            Result result = app.run();
-            app.printResult(result);
-        }
+        guiView.setOnUserInputReady((v) -> {
+            if (guiView.getParameters() == null) {
+                ConsoleView consoleView = new ConsoleView();
+                MainController controller = new MainController(consoleView);
+                Application app = new Application(controller);
+                Result result = app.run();
+                app.printResult(result);
+            } else {
+                MainController controller = new MainController(guiView);
+                Application app = new Application(controller);
+                Result result = app.run();
+                app.printResult(result);
+            }
+        });
     }
 }

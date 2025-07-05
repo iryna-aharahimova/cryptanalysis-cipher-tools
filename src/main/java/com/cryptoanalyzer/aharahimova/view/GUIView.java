@@ -1,103 +1,66 @@
 package com.cryptoanalyzer.aharahimova.view;
 
 import com.cryptoanalyzer.aharahimova.entity.Result;
-
+import com.cryptoanalyzer.aharahimova.view.model.UserParameters;
+import com.cryptoanalyzer.aharahimova.view.gui.CryptoAnalyzerWindow;
 import javax.swing.*;
-import java.awt.*;
-import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 
 import static com.cryptoanalyzer.aharahimova.constants.ApplicationCompletionConstants.EXCEPTION;
 import static com.cryptoanalyzer.aharahimova.constants.ApplicationCompletionConstants.SUCCESS;
 
 public class GUIView implements View {
-    private boolean switchToConsole = false;
-    private String[] parameters;
-    private final CountDownLatch latch = new CountDownLatch(1);
 
-    private final String basePath = "C:\\Users\\irynaa\\IdeaProjects\\cryptoanalysis-cipher-tools\\";
+    private CryptoAnalyzerWindow window;
+    private UserParameters parameters;
+    private boolean switchToConsole = false;
+    private Consumer<Void> onUserInputReady;
 
     public GUIView() {
-        SwingUtilities.invokeLater(this::showGuiWindow);
+        SwingUtilities.invokeLater(() -> {
+            window = new CryptoAnalyzerWindow();
+            setupListeners();
+            window.setVisible(true);
+        });
     }
 
-    private void showGuiWindow() {
-        JFrame frame = new JFrame("Crypto Analyzer");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1000, 250);
-        frame.setLayout(new BorderLayout());
-        frame.setLocationRelativeTo(null);
-
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        String[] modes = {"Encode", "Decode", "Brute Force"};
-        JComboBox<String> modeComboBox = new JComboBox<>(modes);
-
-        JTextField sourceField = new JTextField(basePath + "input.txt");
-        JTextField keyField = new JTextField("3");
-
-        modeComboBox.addActionListener(e -> {
-            int selectedIndex = modeComboBox.getSelectedIndex();
-            if (selectedIndex == 2) {
-                keyField.setVisible(false);
-                sourceField.setText(basePath + "input_[ENCRYPTED].txt");
-            } else {
-                keyField.setVisible(true);
-                sourceField.setText(selectedIndex == 0 ? basePath + "input.txt" : basePath + "input_[ENCRYPTED].txt");
-            }
-            panel.revalidate();
-            panel.repaint();
-        });
-
-        JButton consoleButton = new JButton("Switch to Console");
-        JButton runButton = new JButton("Run");
-
-        panel.add(new JLabel("Mode:"));
-        panel.add(modeComboBox);
-        panel.add(new JLabel("Source File:"));
-        panel.add(sourceField);
-        panel.add(new JLabel("Key (for Encode/Decode):"));
-        panel.add(keyField);
-        panel.add(consoleButton);
-        panel.add(runButton);
-
-        frame.add(panel, BorderLayout.CENTER);
-        frame.setVisible(true);
-
-        runButton.addActionListener(e -> {
-            int modeIndex = modeComboBox.getSelectedIndex();
+    private void setupListeners() {
+        window.getRunButton().addActionListener(e -> {
+            int modeIndex = window.getModeComboBox().getSelectedIndex();
             String mode = String.valueOf(modeIndex + 1);
-            String source = sourceField.getText();
-            String key = keyField.getText();
+            String source = window.getSourceField().getText();
+            String key = window.getKeyField().getText();
 
             if (mode.equals("3")) {
-                parameters = new String[]{mode, source};
+                parameters = new UserParameters(mode, source);
             } else {
-                parameters = new String[]{mode, source, key};
+                parameters = new UserParameters(mode, source, key);
             }
+            switchToConsole = false;
 
-            latch.countDown();
-            frame.dispose();
+            if (onUserInputReady != null) {
+                onUserInputReady.accept(null);
+            }
         });
 
-        consoleButton.addActionListener(e -> {
+        window.getConsoleButton().addActionListener(e -> {
+            window.dispose();
             switchToConsole = true;
-            latch.countDown();
-            frame.dispose();
+            parameters = null;
+
+            if (onUserInputReady != null) {
+                onUserInputReady.accept(null);
+            }
         });
     }
 
-    public void waitForUserInput() {
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    public void setOnUserInputReady(Consumer<Void> callback) {
+        this.onUserInputReady = callback;
     }
 
     @Override
     public String[] getParameters() {
-        return switchToConsole ? null : parameters;
+        return switchToConsole ? null : (parameters != null ? parameters.toParametersArray() : null);
     }
 
     @Override
