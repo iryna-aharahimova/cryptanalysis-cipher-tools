@@ -3,6 +3,7 @@ package com.cryptoanalyzer.aharahimova.services;
 import com.cryptoanalyzer.aharahimova.entity.Result;
 import com.cryptoanalyzer.aharahimova.exception.ApplicationException;
 import com.cryptoanalyzer.aharahimova.repository.ResultCode;
+import com.cryptoanalyzer.aharahimova.utils.CryptoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,31 +30,16 @@ public class Encode implements Function {
             logger.info(USING_KEY, "encode", key);
 
             String original = Files.readString(inputPath, StandardCharsets.UTF_8);
-            String encrypted = encode(original, key);
+            String encoded = CryptoUtils.shiftText(original, key, ALPHABET);
 
             logger.info(SAVING_RESULT_TO_FILE, "encode", getOutputPath(inputPath, ENCRYPTED));
             Path outputPath = getOutputPath(inputPath, ENCRYPTED);
-            Files.writeString(outputPath, encrypted, StandardCharsets.UTF_8);
+            Files.writeString(outputPath, encoded, StandardCharsets.UTF_8);
 
             return new Result(ResultCode.OK);
         } catch (Exception e) {
             logger.error(OPERATION_FAILED, e);
             return new Result(ResultCode.ERROR, new ApplicationException(OPERATION_FAILED, e));
         }
-
-    }
-
-    private String encode(String text, int key) {
-        StringBuilder sb = new StringBuilder();
-        for (char ch : text.toCharArray()) {
-            int index = ALPHABET.indexOf(ch);
-            if (index == -1) {
-                sb.append(ch);
-            } else {
-                int newIndex = (index + key + ALPHABET.length()) % ALPHABET.length();
-                sb.append(ALPHABET.charAt(newIndex));
-            }
-        }
-        return sb.toString();
     }
 }

@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.cryptoanalyzer.aharahimova.utils.CryptoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +42,7 @@ public class BruteForce implements Function {
             String encryptedContent = Files.readString(inputPath);
 
             for (int key = 1; key < ALPHABET.length(); key++) {
-                String decoded = decodeWithKey(encryptedContent, key).toLowerCase();
+                String decoded = CryptoUtils.shiftText(encryptedContent, -key, ALPHABET).toLowerCase();
                 Set<String> found = findCommonWords(decoded);
 
                 if (!found.isEmpty()) {
@@ -58,15 +60,6 @@ public class BruteForce implements Function {
             logger.error(OPERATION_FAILED, e);
             return new Result(ERROR, new ApplicationException(OPERATION_FAILED, e));
         }
-    }
-
-    private String decodeWithKey(String text, int key) {
-        StringBuilder decoded = new StringBuilder();
-        for (char ch : text.toCharArray()) {
-            int idx = ALPHABET.indexOf(ch);
-            decoded.append(idx == -1 ? ch : ALPHABET.charAt((idx - key + ALPHABET.length()) % ALPHABET.length()));
-        }
-        return decoded.toString();
     }
 
     private Set<String> findCommonWords(String text) {
