@@ -23,7 +23,6 @@ public class Encode implements Function {
     @Override
     public Result execute(String[] parameters) {
         try {
-            logger.info(OPERATION_STARTED, "encode", parameters[1]);
             Path inputPath = Path.of(parameters[1]);
 
             int parsedKey = Integer.parseInt(parameters[2]);
