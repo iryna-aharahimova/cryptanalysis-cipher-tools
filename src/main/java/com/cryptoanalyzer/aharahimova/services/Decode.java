@@ -24,7 +24,6 @@ public class Decode implements Function {
     @Override
     public Result execute(String[] parameters) {
         try {
-            logger.info(OPERATION_STARTED, "decode", parameters[1]);
             String inputFilePath = parameters[1];
 
             int parsedKey = Integer.parseInt(parameters[2]);
@@ -35,14 +34,15 @@ public class Decode implements Function {
                 return new Result(ResultCode.ERROR, new ApplicationException(KEY_IS_ZERO));
             }
 
+            logger.info(OPERATION_STARTED, "decode", parameters[1]);
             logger.info(USING_KEY, "decode", key);
 
             Path inputPath = Path.of(inputFilePath);
             String original = Files.readString(inputPath);
             String decoded = CryptoUtils.shiftText(original, -key, ALPHABET);
 
-            logger.info(SAVING_RESULT_TO_FILE, "decode", getOutputPath(inputPath, DECRYPTED));
             Path outputPath = getOutputPath(inputPath, DECRYPTED);
+            logger.info(SAVING_RESULT_TO_FILE, "decode", getOutputPath(inputPath, DECRYPTED));
             Files.writeString(outputPath, decoded);
 
             return new Result(OK);

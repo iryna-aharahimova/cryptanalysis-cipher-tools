@@ -34,13 +34,14 @@ public class Encode implements Function {
                 return new Result(ResultCode.ERROR, new ApplicationException(KEY_IS_ZERO));
             }
 
+            logger.info(OPERATION_STARTED, "encode", parameters[1]);
             logger.info(USING_KEY, "encode", key);
 
             String original = Files.readString(inputPath, StandardCharsets.UTF_8);
             String encoded = CryptoUtils.shiftText(original, key, ALPHABET);
 
-            logger.info(SAVING_RESULT_TO_FILE, "encode", getOutputPath(inputPath, ENCRYPTED));
             Path outputPath = getOutputPath(inputPath, ENCRYPTED);
+            logger.info(SAVING_RESULT_TO_FILE, "encode", getOutputPath(inputPath, ENCRYPTED));
             Files.writeString(outputPath, encoded, StandardCharsets.UTF_8);
 
             return new Result(ResultCode.OK);

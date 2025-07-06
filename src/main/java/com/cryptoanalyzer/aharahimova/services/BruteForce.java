@@ -37,9 +37,10 @@ public class BruteForce implements Function {
     @Override
     public Result execute(String[] parameters) {
         try {
-            logger.info(OPERATION_STARTED, "brute force", parameters[1]);
             String inputFilePath = parameters[1];
             Path inputPath = Path.of(inputFilePath);
+            logger.info(OPERATION_STARTED, "brute force", parameters[1]);
+
             String encryptedContent = Files.readString(inputPath);
 
             for (int key = 1; key < ALPHABET.length(); key++) {
