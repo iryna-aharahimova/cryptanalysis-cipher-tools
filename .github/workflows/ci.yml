@@ -2,9 +2,7 @@ name: Java CI
 
 on:
   push:
-    branches: [main, master]
   pull_request:
-    branches: [main, master]
 
 jobs:
   build:
@@ -23,7 +21,7 @@ jobs:
         run: mvn clean verify
 
       - name: Upload code coverage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
           path: target/site/jacoco
