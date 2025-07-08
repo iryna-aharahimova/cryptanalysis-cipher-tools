@@ -1,8 +1,12 @@
 package com.cryptoanalyzer.aharahimova.view;
 
+import ch.qos.logback.classic.Logger;
 import com.cryptoanalyzer.aharahimova.entity.Result;
+import com.cryptoanalyzer.aharahimova.view.gui.GUILogHandler;
 import com.cryptoanalyzer.aharahimova.view.model.UserParameters;
 import com.cryptoanalyzer.aharahimova.view.gui.CryptoAnalyzerWindow;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.*;
 import java.util.function.Consumer;
 
@@ -19,6 +23,14 @@ public class GUIView implements View {
     public GUIView() {
         SwingUtilities.invokeLater(() -> {
             window = new CryptoAnalyzerWindow();
+
+            GUILogHandler.setLogArea(window.getLogArea());
+            Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+            GUILogHandler guiAppender = new GUILogHandler();
+            guiAppender.setContext(rootLogger.getLoggerContext());
+            guiAppender.start();
+            rootLogger.addAppender(guiAppender);
+
             setupListeners();
             window.setVisible(true);
         });
