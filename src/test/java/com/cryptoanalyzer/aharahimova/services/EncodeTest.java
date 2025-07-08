@@ -11,10 +11,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static com.cryptoanalyzer.aharahimova.constants.LogMessagesConstants.KEY_IS_ZERO;
 import static com.cryptoanalyzer.aharahimova.utils.PathUtils.getOutputPath;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class EncodeTest {
+
     private Encode encode;
     private Path tempFile;
     private int randomKey;
@@ -30,7 +32,6 @@ public class EncodeTest {
     @AfterEach
     void tearDown() throws IOException {
         Files.deleteIfExists(tempFile);
-
         if (outputPath != null) {
             Files.deleteIfExists(outputPath);
         }
@@ -47,10 +48,10 @@ public class EncodeTest {
         assertEquals(ResultCode.OK, result.getResultCode());
 
         outputPath = getOutputPath(tempFile, "_[ENCRYPTED]");
-        assertTrue(Files.exists(outputPath));
+        assertTrue(Files.exists(outputPath), "Encrypted output file should exist");
 
         String encryptedText = Files.readString(outputPath);
-        assertNotEquals(original, encryptedText);
+        assertNotEquals(original, encryptedText, "Encrypted text should differ from original");
     }
 
     @Test
@@ -62,7 +63,19 @@ public class EncodeTest {
 
         Result result = encode.execute(new String[]{"encode", tempFile.toString(), invalidKey});
 
+        assertEquals(ResultCode.ERROR, result.getResultCode(), "Invalid key should cause error");
+        assertNotNull(result.getApplicationException(), "Exception info should be present");
+    }
+
+    @Test
+    void testEncodeWithKeyZeroReturnsError() throws IOException {
+        String original = "test text";
+        Files.writeString(tempFile, original);
+
+        Result result = encode.execute(new String[]{"encode", tempFile.toString(), "0"});
+
         assertEquals(ResultCode.ERROR, result.getResultCode());
         assertNotNull(result.getApplicationException());
+        assertTrue(result.getApplicationException().getMessage().contains(KEY_IS_ZERO));
     }
 }

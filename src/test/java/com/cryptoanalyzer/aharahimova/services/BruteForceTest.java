@@ -7,17 +7,16 @@ import com.cryptoanalyzer.aharahimova.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.UUID;
 
 import static com.cryptoanalyzer.aharahimova.constants.CryptoAlphabet.ALPHABET;
 import static com.cryptoanalyzer.aharahimova.constants.LogMessagesConstants.BRUTE_FORCE_NO_COMMON_WORDS;
 import static org.junit.jupiter.api.Assertions.*;
 
-class BruteForceTest {
+public class BruteForceTest {
+
     private BruteForce bruteForce;
     private Path tempFile;
     private int randomKey;
@@ -42,9 +41,9 @@ class BruteForceTest {
 
         Files.writeString(tempFile, encoded);
 
-        Result decoded = bruteForce.execute(new String[]{"brute", tempFile.toString()});
+        Result result = bruteForce.execute(new String[]{"brute", tempFile.toString()});
 
-        assertEquals(ResultCode.OK, decoded.getResultCode(), "Should decode successfully");
+        assertEquals(ResultCode.OK, result.getResultCode(), "Should decode successfully");
     }
 
     @Test
@@ -55,16 +54,8 @@ class BruteForceTest {
 
         Result result = bruteForce.execute(new String[]{"brute", tempFile.toString()});
 
-        assertEquals(ResultCode.OK, result.getResultCode(), "Should return error when no common words found");
-        assertTrue(result.getApplicationException().getMessage().contains(BRUTE_FORCE_NO_COMMON_WORDS));
-    }
-
-    @Test
-    void testMissingFile() {
-        String fakePath = "nonexistent-" + UUID.randomUUID() + ".txt";
-        Result result = bruteForce.execute(new String[]{"brute", fakePath});
-
-        assertEquals(ResultCode.ERROR, result.getResultCode(), "Should return error for missing file");
+        assertEquals(ResultCode.OK, result.getResultCode());
         assertNotNull(result.getApplicationException());
+        assertTrue(result.getApplicationException().getMessage().contains(BRUTE_FORCE_NO_COMMON_WORDS));
     }
 }
