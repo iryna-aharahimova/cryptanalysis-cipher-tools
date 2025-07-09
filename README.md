@@ -25,19 +25,19 @@ Select the option that suits you best and follow the steps below:
 ### 1. Run the GUI
 1. Clone the repository:
 ```bash
-   git clone https://github.com/your-username/cryptoanalysis-cipher-tools.git
-   cd cryptoanalysis-cipher-tools
+git clone https://github.com/iryna-aharahimova/cryptanalysis-cipher-tools.git
+cd cryptoanalysis-cipher-tools
 ```
 2. Run from source:
    - Launch EntryPoint.java in your IDE, OR
    - Use terminal:
 ```bash 
-   java -jar target/cryptoanalysis-cipher-tools-1.0-SNAPSHOT-jar-with-dependencies.jar
+java -jar target/cryptoanalysis-cipher-tools-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
 ### 2. Run in Console Mode
 ```bash
-   java -jar target/cryptoanalysis-cipher-tools-1.0-SNAPSHOT-jar-with-dependencies.jar [mode] [input_file] [key]
+java -jar target/cryptoanalysis-cipher-tools-1.0-SNAPSHOT-jar-with-dependencies.jar [mode] [input_file] [key]
 ```
 
 | Mode | Name        | Description                       | Key Required |
@@ -52,12 +52,12 @@ Select the option that suits you best and follow the steps below:
 ### Encode a file with key 5:
 
 ```bash
-   java -jar cryptoanalysis-cipher-tools-1.0-SNAPSHOT-jar-with-dependencies.jar 1 input_[ENCRYPTED].txt 5
+java -jar cryptoanalysis-cipher-tools-1.0-SNAPSHOT-jar-with-dependencies.jar 1 input_[ENCRYPTED].txt 5
 ```
 ### Brute-force decrypt:
 
 ```bash
-   java -jar cryptoanalysis-cipher-tools-1.0-SNAPSHOT-jar-with-dependencies.jar 3 input_[ENCRYPTED].txt
+java -jar cryptoanalysis-cipher-tools-1.0-SNAPSHOT-jar-with-dependencies.jar 3 input_[ENCRYPTED].txt
 ```
 ## File Structure
 <pre>
@@ -77,7 +77,7 @@ cryptoanalysis-cipher-tools/
 To build the project manually:
 
 ```bash 
-   mvn clean package
+mvn clean package
 ``` 
 
 The compiled JAR will be at: 
