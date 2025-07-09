@@ -15,6 +15,16 @@ public class EntryPoint {
     private static final Logger logger = LoggerFactory.getLogger(EntryPoint.class);
 
     public static void main(String[] args) {
+        if (args.length > 0) {
+            logger.info(CONSOLE_MODE_STARTED);
+            ConsoleView consoleView = new ConsoleView(args);
+            MainController controller = new MainController(consoleView);
+            Application app = new Application(controller);
+            Result result = app.run();
+            app.printResult(result);
+            return;
+        }
+
         logger.info(GUI_MODE_STARTED);
         GUIView guiView = new GUIView();
 

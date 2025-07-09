@@ -13,6 +13,10 @@ public class ConsoleView implements View {
         this.parameters = new ConsoleInputCollector().collect();
     }
 
+    public ConsoleView(String[] args) {
+        this.parameters = args;
+    }
+
     @Override
     public String[] getParameters() {
         return parameters;
