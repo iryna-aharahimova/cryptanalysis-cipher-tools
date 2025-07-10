@@ -20,7 +20,7 @@
 [![Logback](https://img.shields.io/badge/Logback-Logging-blue.svg)](http://logback.qos.ch/)
 
 ## Usage
-Select the option that suits you best and follow the steps below:
+Run the application using one of the options below:
 
 ### 1. Run the GUI
 1. Clone the repository:
