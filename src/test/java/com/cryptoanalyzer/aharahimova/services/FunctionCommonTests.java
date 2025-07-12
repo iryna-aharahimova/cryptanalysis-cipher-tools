@@ -3,31 +3,30 @@ package com.cryptoanalyzer.aharahimova.services;
 import com.cryptoanalyzer.aharahimova.entity.Result;
 import com.cryptoanalyzer.aharahimova.repository.ResultCode;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-import static com.cryptoanalyzer.aharahimova.constants.FunctionCodeConstants.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FunctionCommonTests {
 
-    static Stream<Arguments> functionsProvider() {
+    record FunctionTestCase(Function function, String name, String[] parameters) {}
+
+    static Stream<FunctionTestCase> functionsProvider() {
         return Stream.of(
-                Arguments.of(new Encode(), ENCODE, new String[]{"encode", "nonexistentfile.txt", "3"}),
-                Arguments.of(new Decode(), DECODE, new String[]{"decode", "nonexistentfile.txt", "3"}),
-                Arguments.of(new BruteForce(), BRUTE_FORCE, new String[]{"brute", "nonexistentfile.txt"})
+                new FunctionTestCase(new Encode(), "ENCODE", new String[]{"encode", "nonexistentfile.txt", "3"}),
+                new FunctionTestCase(new Decode(), "DECODE", new String[]{"decode", "nonexistentfile.txt", "3"}),
+                new FunctionTestCase(new BruteForce(), "BRUTE_FORCE", new String[]{"brute", "nonexistentfile.txt"})
         );
     }
 
-    @ParameterizedTest(name = "{1} => Testing with non-existent file")
+    @ParameterizedTest(name = "{0} should return error for non-existent file")
     @MethodSource("functionsProvider")
-    void testNonExistentFileReturnsError(Function function, String name, String[] parameters) {
-        Result result = function.execute(parameters);
+    void testNonExistentFileReturnsError(FunctionTestCase testCase) {
+        Result result = testCase.function().execute(testCase.parameters());
 
-        assertEquals(ResultCode.ERROR, result.getResultCode());
-        assertNotNull(result.getApplicationException());
+        assertEquals(ResultCode.ERROR, result.getResultCode(), testCase.name() + " did not return ERROR");
+        assertNotNull(result.getApplicationException(), testCase.name() + " should return an exception");
     }
 }
