@@ -3,9 +3,8 @@ package com.cryptoanalyzer.aharahimova.services;
 import com.cryptoanalyzer.aharahimova.entity.Result;
 import com.cryptoanalyzer.aharahimova.repository.ResultCode;
 import com.cryptoanalyzer.aharahimova.utils.CryptoUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.cryptoanalyzer.aharahimova.utils.TestUtils;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -16,27 +15,25 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import static com.cryptoanalyzer.aharahimova.constants.CryptoAlphabet.ALPHABET;
+import static com.cryptoanalyzer.aharahimova.constants.FileSuffixesConstants.DECRYPTED;
 import static com.cryptoanalyzer.aharahimova.constants.LogMessagesConstants.KEY_IS_ZERO;
+import static com.cryptoanalyzer.aharahimova.utils.FileNameUtils.getOutputPath;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DecodeTest {
+class DecodeTest {
 
     private Decode decode;
     private Path tempFile;
     private Path outputPath;
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         decode = new Decode();
-        tempFile = Files.createTempFile("decode-test-", ".txt");
     }
 
     @AfterEach
     void tearDown() throws IOException {
-        Files.deleteIfExists(tempFile);
-        if (outputPath != null) {
-            Files.deleteIfExists(outputPath);
-        }
+        TestUtils.deleteIfExists(tempFile, outputPath);
     }
 
     static Stream<Arguments> decodeTestData() {
@@ -48,36 +45,33 @@ public class DecodeTest {
 
     @ParameterizedTest(name = "Decoding \"{0}\" with key={1}")
     @MethodSource("decodeTestData")
-    void testDecodingWithVariousKeys(String original, int key) throws Exception {
+    void shouldDecodeSuccessfully(String original, int key) throws Exception {
         String encoded = CryptoUtils.shiftText(original, key, ALPHABET);
-        Files.writeString(tempFile, encoded);
+        tempFile = TestUtils.createTempFileWithContent("decode-test-", ".txt", encoded);
 
         Result result = decode.execute(new String[]{"decode", tempFile.toString(), String.valueOf(key)});
-
         assertEquals(ResultCode.OK, result.getResultCode());
 
-        outputPath = com.cryptoanalyzer.aharahimova.utils.PathUtils.getOutputPath(tempFile, "_[DECRYPTED]");
-        assertTrue(Files.exists(outputPath), "File was created");
+        outputPath = getOutputPath(tempFile, DECRYPTED);
+        assertTrue(Files.exists(outputPath), "Decrypted file should exist");
 
-        String decodedText = Files.readString(outputPath);
-        assertEquals(original, decodedText, "Decoded text matches the original one");
+        String decoded = Files.readString(outputPath);
+        assertEquals(original, decoded, "Decoded text should match original");
     }
 
     @Test
-    void testDecodeWithInvalidKeyReturnsError() throws Exception {
-        String originalText = "Hello World";
-        Files.writeString(tempFile, originalText);
+    void shouldReturnError_WhenKeyIsInvalid() throws Exception {
+        tempFile = TestUtils.createTempFileWithContent("decode-test-", ".txt", "Hello World");
 
         Result result = decode.execute(new String[]{"decode", tempFile.toString(), "invalidKey"});
 
-        assertEquals(ResultCode.ERROR, result.getResultCode(), "Invalid key results in error");
+        assertEquals(ResultCode.ERROR, result.getResultCode());
         assertNotNull(result.getApplicationException());
     }
 
     @Test
-    void testDecodeWithKeyZeroReturnsError() throws IOException {
-        String originalText = "Hello World";
-        Files.writeString(tempFile, originalText);
+    void shouldReturnError_WhenKeyIsZero() throws Exception {
+        tempFile = TestUtils.createTempFileWithContent("decode-test-", ".txt", "Hello World");
 
         Result result = decode.execute(new String[]{"decode", tempFile.toString(), "0"});
 

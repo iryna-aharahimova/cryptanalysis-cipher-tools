@@ -20,8 +20,6 @@ public class Result {
     }
 
     public Result(ResultCode resultCode, ApplicationException applicationException) {
-
-
         this.resultCode = resultCode;
         this.applicationException = applicationException;
     }

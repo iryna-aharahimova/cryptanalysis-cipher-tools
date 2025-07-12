@@ -2,19 +2,18 @@ package com.cryptoanalyzer.aharahimova.services;
 
 import com.cryptoanalyzer.aharahimova.entity.Result;
 import com.cryptoanalyzer.aharahimova.exception.ApplicationException;
-import com.cryptoanalyzer.aharahimova.repository.ResultCode;
 import com.cryptoanalyzer.aharahimova.utils.CryptoUtils;
+import com.cryptoanalyzer.aharahimova.utils.FileIoUtils;
+import com.cryptoanalyzer.aharahimova.utils.FileNameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static com.cryptoanalyzer.aharahimova.constants.CryptoAlphabet.ALPHABET;
 import static com.cryptoanalyzer.aharahimova.constants.FileSuffixesConstants.ENCRYPTED;
 import static com.cryptoanalyzer.aharahimova.constants.LogMessagesConstants.*;
-import static com.cryptoanalyzer.aharahimova.utils.PathUtils.getOutputPath;
+import static com.cryptoanalyzer.aharahimova.repository.ResultCode.ERROR;
+import static com.cryptoanalyzer.aharahimova.repository.ResultCode.OK;
 
 public class Encode implements Function {
 
@@ -30,23 +29,24 @@ public class Encode implements Function {
 
             if (!CryptoUtils.validateKey(key)) {
                 logger.error(KEY_IS_ZERO);
-                return new Result(ResultCode.ERROR, new ApplicationException(KEY_IS_ZERO));
+                return new Result(ERROR, new ApplicationException(KEY_IS_ZERO));
             }
 
-            logger.info(OPERATION_STARTED, "encode", parameters[1]);
+            logger.info(OPERATION_STARTED, "encode", inputPath);
             logger.info(USING_KEY, "encode", key);
 
-            String original = Files.readString(inputPath, StandardCharsets.UTF_8);
+            String original = FileIoUtils.readFile(inputPath);
             String encoded = CryptoUtils.shiftText(original, key, ALPHABET);
 
-            Path outputPath = getOutputPath(inputPath, ENCRYPTED);
-            logger.info(SAVING_RESULT_TO_FILE, "encode", getOutputPath(inputPath, ENCRYPTED));
-            Files.writeString(outputPath, encoded, StandardCharsets.UTF_8);
+            Path outputPath = FileNameUtils.getOutputPath(inputPath, ENCRYPTED);
+            logger.info(SAVING_RESULT_TO_FILE, "encode", outputPath);
 
-            return new Result(ResultCode.OK);
+            FileIoUtils.writeFile(outputPath, encoded);
+            return new Result(OK);
+
         } catch (Exception e) {
             logger.error(OPERATION_FAILED, e);
-            return new Result(ResultCode.ERROR, new ApplicationException(OPERATION_FAILED, e));
+            return new Result(ERROR, new ApplicationException(OPERATION_FAILED, e));
         }
     }
 }

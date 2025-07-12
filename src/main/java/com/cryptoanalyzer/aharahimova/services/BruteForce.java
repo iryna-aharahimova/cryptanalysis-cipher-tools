@@ -2,29 +2,29 @@ package com.cryptoanalyzer.aharahimova.services;
 
 import com.cryptoanalyzer.aharahimova.entity.Result;
 import com.cryptoanalyzer.aharahimova.exception.ApplicationException;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.cryptoanalyzer.aharahimova.utils.CryptoUtils;
+import com.cryptoanalyzer.aharahimova.utils.FileIoUtils;
+import com.cryptoanalyzer.aharahimova.utils.FileNameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.file.Path;
+import java.util.*;
 
 import static com.cryptoanalyzer.aharahimova.constants.CryptoAlphabet.ALPHABET;
 import static com.cryptoanalyzer.aharahimova.constants.FileSuffixesConstants.BRUTE_FORCE;
 import static com.cryptoanalyzer.aharahimova.constants.LogMessagesConstants.*;
 import static com.cryptoanalyzer.aharahimova.repository.ResultCode.ERROR;
 import static com.cryptoanalyzer.aharahimova.repository.ResultCode.OK;
-import static com.cryptoanalyzer.aharahimova.utils.PathUtils.getOutputPath;
 
 public class BruteForce implements Function {
+
     private static final Logger logger = LoggerFactory.getLogger(BruteForce.class);
 
-    private static final List<String> COMMON_WORDS = Arrays.asList(
+    private record DecryptionResult(int key, String decoded, Set<String> words, int score) {
+    }
+
+    private static final Set<String> COMMON_WORDS = Set.of(
             "the", "and", "that", "have", "for", "not", "with", "you",
             "this", "but", "his", "from", "they", "say", "her", "she",
             "will", "would", "there", "their", "about", "which", "when",
@@ -37,24 +37,23 @@ public class BruteForce implements Function {
     @Override
     public Result execute(String[] parameters) {
         try {
-            String inputFilePath = parameters[1];
-            Path inputPath = Path.of(inputFilePath);
-            logger.info(OPERATION_STARTED, "brute force", parameters[1]);
+            Path inputPath = Path.of(parameters[1]);
+            logger.info(OPERATION_STARTED, "brute force", inputPath);
 
-            String encryptedContent = Files.readString(inputPath);
+            String encryptedContent = FileIoUtils.readFile(inputPath);
+            DecryptionResult result = findBestDecryption(encryptedContent);
 
-            for (int key = 1; key < ALPHABET.length(); key++) {
-                String decoded = CryptoUtils.shiftText(encryptedContent, -key, ALPHABET);
-                Set<String> found = findCommonWords(decoded);
+            if (result.score() > 0) {
+                logger.info(BRUTE_FORCE_FOUND_WORDS, result.words());
+                logger.info(BRUTE_FORCE_SUCCEEDED_KEY, result.key());
 
-                if (!found.isEmpty()) {
-                    logger.info(BRUTE_FORCE_FOUND_WORDS, found);
-                    logger.info(BRUTE_FORCE_SUCCEEDED_KEY, key);
-                    logger.info(SAVING_RESULT_TO_FILE, "brute force", getOutputPath(inputPath, BRUTE_FORCE));
-                    Files.writeString(getOutputPath(inputPath, BRUTE_FORCE), decoded);
-                    return new Result(OK);
-                }
+                Path outputPath = FileNameUtils.getOutputPath(inputPath, BRUTE_FORCE);
+                logger.info(SAVING_RESULT_TO_FILE, "brute force", outputPath);
+
+                FileIoUtils.writeFile(outputPath, result.decoded());
+                return new Result(OK);
             }
+
             logger.warn(BRUTE_FORCE_NO_COMMON_WORDS);
             return new Result(OK, new ApplicationException(BRUTE_FORCE_NO_COMMON_WORDS));
 
@@ -66,9 +65,32 @@ public class BruteForce implements Function {
 
     private Set<String> findCommonWords(String text) {
         Set<String> found = new HashSet<>();
-        for (String w : text.split("[\\s.,!?:\"'«»]+")) {
-            if (COMMON_WORDS.contains(w)) found.add(w);
+        for (String word : text.split("[\\s.,!?:\"'«»]+")) {
+            if (COMMON_WORDS.contains(word.toLowerCase())) {
+                found.add(word);
+            }
         }
         return found;
+    }
+
+    private DecryptionResult findBestDecryption(String encryptedText) {
+        int bestKey = -1;
+        int maxMatches = 0;
+        String bestDecoded = null;
+        Set<String> bestWords = Set.of();
+
+        for (int key = 1; key < ALPHABET.length(); key++) {
+            String decoded = CryptoUtils.shiftText(encryptedText, -key, ALPHABET);
+            Set<String> foundWords = findCommonWords(decoded);
+
+            if (foundWords.size() > maxMatches) {
+                bestKey = key;
+                maxMatches = foundWords.size();
+                bestDecoded = decoded;
+                bestWords = foundWords;
+            }
+        }
+
+        return new DecryptionResult(bestKey, bestDecoded, bestWords, maxMatches);
     }
 }
